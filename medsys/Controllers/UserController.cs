@@ -39,21 +39,18 @@ namespace medsys.Controllers
         [HttpPost]
         public async Task<ActionResult<IEnumerable<User>>> registerUser(UserDTO request)
         {
-            if (request.LoginEmail != null && request.Password != null && request.FullName != null)
-            {
-                string passwordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
-                user.Id = Guid.NewGuid().ToString();
-                user.HashedPassword = passwordHash;
-                user.LoginEmail = request.LoginEmail;
-                user.FullName = request.FullName;
-                user.IsDoctor = request.IsDoctor;
-                _context.Users.Add(user);
-                await _context.SaveChangesAsync();
-            } else
+            if (request.LoginEmail == null || request.Password == null || request.FullName == null)
             {
                 return BadRequest("Empty fields, please fill them");
             }
-            
+            string passwordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
+            user.Id = Guid.NewGuid().ToString();
+            user.HashedPassword = passwordHash;
+            user.LoginEmail = request.LoginEmail;
+            user.FullName = request.FullName;
+            user.IsDoctor = request.IsDoctor;
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
             return Ok(user.Id);
         }
     }
