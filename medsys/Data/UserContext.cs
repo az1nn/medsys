@@ -1,4 +1,4 @@
-﻿using medsys.Models;
+﻿using medsys.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace medsys.Data
@@ -9,5 +9,6 @@ namespace medsys.Data
         {
         }
         public DbSet<User> Users { get; set; }
+        public DbSet<Consultation> Consultation { get; set; }
     }
 }

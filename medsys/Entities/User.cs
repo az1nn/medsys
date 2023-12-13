@@ -1,25 +1,19 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
-namespace medsys.Models
+namespace medsys.Entities
 {
     [Table("users")]
     public class User
     {
         [Key]
-        [Column("id")]
         public string Id { get; set; }
-
-        [Column("name")]
         public string FullName { get; set; }
-
-        [Column("email")]
         public string LoginEmail { get; set; }
 
-        [Column("hashpassword")]
+        [JsonIgnore]
         public string HashedPassword { get; set; }
-
-        [Column("isDoctor")]
         public bool IsDoctor { get; set; }
 
     }

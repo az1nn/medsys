@@ -5,7 +5,7 @@
 namespace medsys.Migrations
 {
     /// <inheritdoc />
-    public partial class CreateUser : Migration
+    public partial class CreateTables : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -14,15 +14,15 @@ namespace medsys.Migrations
                 name: "users",
                 columns: table => new
                 {
-                    id = table.Column<string>(type: "text", nullable: false),
-                    name = table.Column<string>(type: "text", nullable: false),
-                    email = table.Column<string>(type: "text", nullable: false),
-                    hashpassword = table.Column<string>(type: "text", nullable: false),
-                    isDoctor = table.Column<bool>(type: "boolean", nullable: false)
+                    Id = table.Column<string>(type: "text", nullable: false),
+                    FullName = table.Column<string>(type: "text", nullable: false),
+                    LoginEmail = table.Column<string>(type: "text", nullable: false),
+                    HashedPassword = table.Column<string>(type: "text", nullable: false),
+                    IsDoctor = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_users", x => x.id);
+                    table.PrimaryKey("PK_users", x => x.Id);
                 });
         }
 

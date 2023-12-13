@@ -11,8 +11,8 @@ using medsys.Data;
 namespace medsys.Migrations
 {
     [DbContext(typeof(UserContext))]
-    [Migration("20231210220726_CreateUser")]
-    partial class CreateUser
+    [Migration("20231213190145_CreateTables")]
+    partial class CreateTables
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,30 +24,25 @@ namespace medsys.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("medsys.Models.User", b =>
+            modelBuilder.Entity("medsys.Entities.User", b =>
                 {
                     b.Property<string>("Id")
-                        .HasColumnType("text")
-                        .HasColumnName("id");
+                        .HasColumnType("text");
 
                     b.Property<string>("FullName")
                         .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("name");
+                        .HasColumnType("text");
 
                     b.Property<string>("HashedPassword")
                         .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("hashpassword");
+                        .HasColumnType("text");
 
                     b.Property<bool>("IsDoctor")
-                        .HasColumnType("boolean")
-                        .HasColumnName("isDoctor");
+                        .HasColumnType("boolean");
 
                     b.Property<string>("LoginEmail")
                         .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("email");
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
