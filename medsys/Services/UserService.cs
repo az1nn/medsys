@@ -8,19 +8,23 @@ namespace medsys.Services
 {
     public interface IUserService
     {
-        Task<IActionResult> registerUser(UserRegisterDTO request);
-        Task<IActionResult> loginUser(UserLoginDTO request);
+        Task<IActionResult> RegisterUser(UserRegisterDTO request);
+        Task<IActionResult> LoginUser(UserLoginDTO request);
         Task<List<User>> GetAll();
+        Task<IActionResult> GetUserById(string id);
     }
     public class UserService: IUserService
     {
         private readonly UserContext _context;
-        public UserService(UserContext context)
+        private readonly ITokenGeneratorService _tokenGeneratorService;
+        public UserService(UserContext context, ITokenGeneratorService tokenGeneratorService)
         {
             _context = context;
+            _tokenGeneratorService = tokenGeneratorService;
+
         }
         public static User user = new User();
-        public async Task<IActionResult> registerUser(UserRegisterDTO request)
+        public async Task<IActionResult> RegisterUser(UserRegisterDTO request)
         {
             string passwordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
             user.Id = Guid.NewGuid().ToString();
@@ -33,7 +37,7 @@ namespace medsys.Services
             return new CreatedResult(String.Empty, new { message = "created" }); 
         }
 
-        public async Task<IActionResult> loginUser(UserLoginDTO request)
+        public async Task<IActionResult> LoginUser(UserLoginDTO request)
         {
             var user = await _context.Users.FirstOrDefaultAsync(user => user.LoginEmail == request.LoginEmail);
             if (user == null)
@@ -46,12 +50,24 @@ namespace medsys.Services
                 return new BadRequestObjectResult("Wrong password, try again"); 
             }
 
-            return new OkObjectResult(new { userId = user.Id, message = "Success" });
+            var token = _tokenGeneratorService.GenerateToken(user.LoginEmail, "ADMIN", user.Id);
+
+            return new OkObjectResult(new { token = token, message = "Success" });
         }
 
         public async Task<List<User>> GetAll() 
         {
             return await _context.Users.ToListAsync();
+        }
+
+        public async Task<IActionResult> GetUserById(string id)
+        {
+            var user = await _context.Users.FindAsync(id);
+            if (user == null)
+            {
+                return new NotFoundObjectResult("User Not Found");
+            }
+            return new OkObjectResult(user);
         }
 
     }

@@ -1,11 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using medsys.Models;
-using medsys.Data;
-using System.Text.Json;
 using medsys.Entities;
 using medsys.Services;
-using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace medsys.Controllers
 {
@@ -20,22 +16,17 @@ namespace medsys.Controllers
             _userService = userService;
         }
 
-        [HttpGet("user")]
+        [HttpGet("users")]
         public async Task<ActionResult<IEnumerable<User>>> GetUsers()
         {
             return Ok(await _userService.GetAll());
         }
 
-        //[HttpGet("user/{id}")]
-        //public async Task<ActionResult<User>> GetUserById(int id)
-        //{
-        //    var user = await _context.Users.FindAsync(id); 
-        //    if (user == null)
-        //    {
-        //        return NotFound();
-        //    }
-        //    return user;
-        //}
+        [HttpGet("users/{id}")]
+        public async Task<IActionResult> GetUserById(string id)
+        {
+            return await _userService.GetUserById(id);
+        }
 
         [HttpPost("register")]
         public async Task<IActionResult> register(UserRegisterDTO request)
@@ -44,13 +35,13 @@ namespace medsys.Controllers
             {
                 return BadRequest("Empty fields, please fill them");
             }
-            return await _userService.registerUser(request);
+            return await _userService.RegisterUser(request);
         }
 
         [HttpPost("login")]
         public async Task<IActionResult> login(UserLoginDTO request)
         {
-            return await _userService.loginUser(request); 
+            return await _userService.LoginUser(request); 
         }
 
     }
