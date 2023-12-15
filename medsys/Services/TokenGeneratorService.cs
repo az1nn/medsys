@@ -6,7 +6,7 @@ using Microsoft.IdentityModel.Tokens;
 
 public interface ITokenGeneratorService
 {
-    string GenerateToken(string username, string role, string userId);
+    string GenerateToken(string username, string role);
 }
 
 public class TokenGeneratorService : ITokenGeneratorService
@@ -17,7 +17,7 @@ public class TokenGeneratorService : ITokenGeneratorService
     {
         _configuration = configuration;
     }
-    public string GenerateToken(string username, string role, string userId)
+    public string GenerateToken(string username, string role)
     {
         var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:SecretKey"]));
         var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
@@ -26,8 +26,7 @@ public class TokenGeneratorService : ITokenGeneratorService
         {
             new Claim("username", username),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new Claim("role", role),
-            new Claim("userId", userId)
+            new Claim("role", role)
         };
 
         var token = new JwtSecurityToken(
