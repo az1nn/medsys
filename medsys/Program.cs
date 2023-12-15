@@ -1,4 +1,5 @@
 using medsys.Data;
+using medsys.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -13,6 +14,8 @@ builder.Services.AddSwaggerGen();
 var configuration = builder.Configuration;
 builder.Services.AddDbContext<UserContext>(options =>
     options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddScoped<IUserService, UserService>();
 
 var app = builder.Build();
 
