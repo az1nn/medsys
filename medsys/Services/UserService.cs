@@ -50,7 +50,9 @@ namespace medsys.Services
                 return new BadRequestObjectResult("Wrong password, try again"); 
             }
 
-            var token = _tokenGeneratorService.GenerateToken(user.LoginEmail, "ADMIN");
+            string role = user.IsDoctor ? "Doctor" : "Patient";
+
+            var token = _tokenGeneratorService.GenerateToken(user.LoginEmail, role);
 
             return new OkObjectResult(new { token = token, message = "Success" });
         }

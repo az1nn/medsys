@@ -19,6 +19,7 @@ builder.Services.AddDbContext<UserContext>(options =>
     options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IConsultationService, ConsultationService>();
 builder.Services.AddScoped<ITokenGeneratorService, TokenGeneratorService>();
 
 builder.Services.AddAuthentication(options =>
