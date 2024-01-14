@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using static medsys.Models.ConsultationDto;
 
 namespace medsys.Entities
 {
@@ -15,7 +16,6 @@ namespace medsys.Entities
         public DateTime ConsultationDate { get; set; }
         public DateTime CreationDate { get; set; }
         public string additionalInfo { get; set; }
-
 
     }
 }

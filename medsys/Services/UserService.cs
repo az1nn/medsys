@@ -1,4 +1,5 @@
-﻿using medsys.Data;
+﻿using medsys.Auth;
+using medsys.Data;
 using medsys.Entities;
 using medsys.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -12,15 +13,18 @@ namespace medsys.Services
         Task<IActionResult> LoginUser(UserLoginDTO request);
         Task<List<User>> GetAll();
         Task<IActionResult> GetUserById(string id);
+        Task<User> GetUserByIdAuth(string id);
     }
     public class UserService: IUserService
     {
         private readonly UserContext _context;
         private readonly ITokenGeneratorService _tokenGeneratorService;
-        public UserService(UserContext context, ITokenGeneratorService tokenGeneratorService)
+        private readonly IJwtUtils _jwtUtils; 
+        public UserService(UserContext context, ITokenGeneratorService tokenGeneratorService, IJwtUtils jwtUtils)
         {
             _context = context;
             _tokenGeneratorService = tokenGeneratorService;
+            _jwtUtils = jwtUtils;
 
         }
         public static User user = new User();
@@ -50,9 +54,9 @@ namespace medsys.Services
                 return new BadRequestObjectResult("Wrong password, try again"); 
             }
 
-            string role = user.IsDoctor ? "Doctor" : "Patient";
+            //string role = user.IsDoctor ? "Doctor" : "Patient";
 
-            var token = _tokenGeneratorService.GenerateToken(user.LoginEmail, role);
+            var token = _jwtUtils.GenerateJwtToken(user);
 
             return new OkObjectResult(new { token = token, message = "Success" });
         }
@@ -64,12 +68,22 @@ namespace medsys.Services
 
         public async Task<IActionResult> GetUserById(string id)
         {
-            var user = await _context.Users.FindAsync(id);
+            var user = await _context.Users.FirstOrDefaultAsync(item => item.Id == id);
             if (user == null)
             {
                 return new NotFoundObjectResult("User Not Found");
             }
             return new OkObjectResult(user);
+        }
+
+        public async Task<User?> GetUserByIdAuth(string id)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(item => item.Id == id);
+            if (user == null)
+            {
+                return null;
+            }
+            return user;
         }
 
     }

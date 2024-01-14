@@ -3,10 +3,12 @@ using medsys.Models;
 using medsys.Entities;
 using medsys.Services;
 using static medsys.Models.ConsultationDto;
+using medsys.Auth;
 
 namespace medsys.Controllers
 {
     [ApiController]
+    [Authorize]
     [Route("api/consult")]
     public class ConsultationController : ControllerBase
     {
@@ -24,6 +26,7 @@ namespace medsys.Controllers
         {
             return Ok(await _consultationService.GetAllConsultations());
         }
+
         [HttpPost("add")]
         public async Task<IActionResult> addConsultation([FromBody] AddConsultationDto request)
         {
@@ -37,8 +40,5 @@ namespace medsys.Controllers
             await _consultationService.AddConsultation(newConsult);
             return Created();
         }
-
-        
-
     }
 }

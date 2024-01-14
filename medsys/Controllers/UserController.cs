@@ -2,10 +2,13 @@ using Microsoft.AspNetCore.Mvc;
 using medsys.Models;
 using medsys.Entities;
 using medsys.Services;
+using medsys.Auth;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace medsys.Controllers
 {
     [ApiController]
+    [Authorize]
     [Route("api")]
     public class userController : ControllerBase
     {
@@ -17,9 +20,14 @@ namespace medsys.Controllers
         }
 
         [HttpGet("users")]
-        public async Task<ActionResult<IEnumerable<User>>> GetUsers()
+        public async Task<ActionResult<List<User>>> GetUsers()
         {
-            return Ok(await _userService.GetAll());
+            var result = await _userService.GetAll();
+            if(result == null)
+            {
+                return NoContent();
+            }
+            return Ok(result);
         }
 
         [HttpGet("users/{id}")]
@@ -28,6 +36,7 @@ namespace medsys.Controllers
             return await _userService.GetUserById(id);
         }
 
+        [AllowAnonymous]
         [HttpPost("register")]
         public async Task<IActionResult> register(UserRegisterDTO request)
         {
@@ -38,6 +47,7 @@ namespace medsys.Controllers
             return await _userService.RegisterUser(request);
         }
 
+        [AllowAnonymous]
         [HttpPost("login")]
         public async Task<IActionResult> login(UserLoginDTO request)
         {
