@@ -30,13 +30,16 @@ namespace medsys.Controllers
         [HttpPost("add")]
         public async Task<IActionResult> addConsultation([FromBody] AddConsultationDto request)
         {
-            Consultation newConsult = new Consultation();
-            newConsult.CreationDate = DateTime.UtcNow;
-            newConsult.ConsultationDate = request.ConsultationDate;
-            newConsult.PatitentId = request.PatitentId;
-            newConsult.DoctorId = request.DoctorId;
-            newConsult.additionalInfo = request.AdditionalInfo ?? "";
-            newConsult.ConsultationId = Guid.NewGuid().ToString();
+            Consultation newConsult = new Consultation
+            {
+                CreationDate = DateTime.UtcNow,
+                ConsultationDate = request.ConsultationDate,
+                PatitentId = request.PatitentId,
+                DoctorId = request.DoctorId,
+                additionalInfo = request.AdditionalInfo ?? "",
+                ConsultationId = Guid.NewGuid().ToString(),
+            };
+            
             await _consultationService.AddConsultation(newConsult);
             return Created();
         }

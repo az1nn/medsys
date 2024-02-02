@@ -9,10 +9,10 @@ namespace medsys.Services
 {
     public interface IUserService
     {
-        Task<IActionResult> RegisterUser(UserRegisterDTO request);
+        Task<bool> RegisterUser(UserRegisterDTO request);
         Task<IActionResult> LoginUser(UserLoginDTO request);
         Task<List<User>> GetAll();
-        Task<IActionResult> GetUserById(string id);
+        Task<User> GetUserById(string id);
         Task<User> GetUserByIdAuth(string id);
     }
     public class UserService: IUserService
@@ -28,17 +28,20 @@ namespace medsys.Services
 
         }
         public static User user = new User();
-        public async Task<IActionResult> RegisterUser(UserRegisterDTO request)
+        public async Task<bool> RegisterUser(UserRegisterDTO request)
         {
             string passwordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
-            user.Id = Guid.NewGuid().ToString();
-            user.HashedPassword = passwordHash;
-            user.LoginEmail = request.LoginEmail;
-            user.FullName = request.FullName;
-            user.IsDoctor = request.IsDoctor;
-            _context.Users.Add(user);
+            var newUser = new User()
+            {
+                Id = Guid.NewGuid().ToString(),
+                HashedPassword = passwordHash,
+                LoginEmail = request.LoginEmail,
+                FullName = request.FullName,
+                IsDoctor = request.IsDoctor
+            };
+            _context.Users.Add(newUser);
             await _context.SaveChangesAsync();
-            return new CreatedResult(String.Empty, new { message = "created" }); 
+            return true;
         }
 
         public async Task<IActionResult> LoginUser(UserLoginDTO request)
@@ -49,7 +52,7 @@ namespace medsys.Services
                 return new NotFoundObjectResult("User Not Found");
 
             }
-            if (BCrypt.Net.BCrypt.Verify(request.Password, user.HashedPassword))
+            if (!BCrypt.Net.BCrypt.Verify(request.Password, user.HashedPassword))
             {
                 return new BadRequestObjectResult("Wrong password, try again"); 
             }
@@ -66,14 +69,10 @@ namespace medsys.Services
             return await _context.Users.ToListAsync();
         }
 
-        public async Task<IActionResult> GetUserById(string id)
+        public async Task<User?> GetUserById(string id)
         {
             var user = await _context.Users.FirstOrDefaultAsync(item => item.Id == id);
-            if (user == null)
-            {
-                return new NotFoundObjectResult("User Not Found");
-            }
-            return new OkObjectResult(user);
+            return user;
         }
 
         public async Task<User?> GetUserByIdAuth(string id)

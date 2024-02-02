@@ -4,6 +4,7 @@ using medsys.Entities;
 using medsys.Services;
 using medsys.Auth;
 using Microsoft.AspNetCore.Http.HttpResults;
+using System.Net;
 
 namespace medsys.Controllers
 {
@@ -13,45 +14,62 @@ namespace medsys.Controllers
     public class userController : ControllerBase
     {
         private IUserService _userService;
-        
+
         public userController(IUserService userService)
         {
             _userService = userService;
         }
 
         [HttpGet("users")]
-        public async Task<ActionResult<List<User>>> GetUsers()
+        public async Task<Results<NoContent, Ok<DefaultResponseDto>>> GetUsers()
         {
             var result = await _userService.GetAll();
-            if(result == null)
+            if (result == null)
             {
-                return NoContent();
+                return TypedResults.NoContent();
             }
-            return Ok(result);
+            return TypedResults.Ok(new DefaultResponseDto { Data = result });
         }
 
         [HttpGet("users/{id}")]
-        public async Task<IActionResult> GetUserById(string id)
+        [ProducesResponseType<User>(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<Results<Ok<DefaultResponseDto>, NotFound>> GetUserById(string id)
         {
-            return await _userService.GetUserById(id);
+            var result = await _userService.GetUserById(id);
+            if (result == null)
+            {
+                return TypedResults.NotFound();
+            }
+            return TypedResults.Ok(new DefaultResponseDto { Data = result});
         }
 
         [AllowAnonymous]
         [HttpPost("register")]
-        public async Task<IActionResult> register(UserRegisterDTO request)
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<Results<Ok<DefaultResponseDto>, BadRequest<DefaultResponseDto>>> Register(UserRegisterDTO request)
         {
             if (request.LoginEmail == null || request.Password == null || request.FullName == null)
             {
-                return BadRequest("Empty fields, please fill them");
+                return TypedResults.BadRequest(new DefaultResponseDto { Status = "Empty fields, please fill them" });
             }
-            return await _userService.RegisterUser(request);
+            var created = await _userService.RegisterUser(request);
+            if (!created)
+            {
+                return TypedResults.BadRequest(new DefaultResponseDto { Status = "server error" });
+            }
+            else
+            {
+                return TypedResults.Ok(new DefaultResponseDto { Status = "created" });
+            }
         }
 
         [AllowAnonymous]
         [HttpPost("login")]
         public async Task<IActionResult> login(UserLoginDTO request)
         {
-            return await _userService.LoginUser(request); 
+            return await _userService.LoginUser(request);
         }
 
     }
