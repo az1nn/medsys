@@ -78,10 +78,6 @@ namespace medsys.Services
         public async Task<User?> GetUserByIdAuth(string id)
         {
             var user = await _context.Users.FirstOrDefaultAsync(item => item.Id == id);
-            if (user == null)
-            {
-                return null;
-            }
             return user;
         }
 

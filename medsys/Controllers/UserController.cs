@@ -41,27 +41,23 @@ namespace medsys.Controllers
             {
                 return TypedResults.NotFound();
             }
-            return TypedResults.Ok(new DefaultResponseDto { Data = result});
+            return TypedResults.Ok(new DefaultResponseDto { Data = result });
         }
 
         [AllowAnonymous]
         [HttpPost("register")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<Results<Ok<DefaultResponseDto>, BadRequest<DefaultResponseDto>>> Register(UserRegisterDTO request)
+        public async Task<Results<Created, BadRequest>> Register(UserRegisterDTO request)
         {
-            if (request.LoginEmail == null || request.Password == null || request.FullName == null)
-            {
-                return TypedResults.BadRequest(new DefaultResponseDto { Status = "Empty fields, please fill them" });
-            }
             var created = await _userService.RegisterUser(request);
             if (!created)
             {
-                return TypedResults.BadRequest(new DefaultResponseDto { Status = "server error" });
+                return TypedResults.BadRequest();
             }
             else
             {
-                return TypedResults.Ok(new DefaultResponseDto { Status = "created" });
+                return TypedResults.Created();
             }
         }
 

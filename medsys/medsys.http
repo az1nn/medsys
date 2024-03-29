@@ -1,6 +1,14 @@
-@medsys_HostAddress = http://localhost:5126
+@medsys_HostAddress = http://localhost:5000
 
 GET {{medsys_HostAddress}}/weatherforecast/
 Accept: application/json
 
 ###
+
+
+POST {{medsys_HostAddress}}/login
+Accept: application/json
+{
+  loginEmail: 'string',
+  password: 'string'
+}
