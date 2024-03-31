@@ -12,10 +12,10 @@ namespace medsys.Controllers
     [Route("api/consult")]
     public class ConsultationController : ControllerBase
     {
-        private IUserService _userService;
+        private UserService _userService;
         private IConsultationService _consultationService;
-        
-        public ConsultationController(IUserService userService, IConsultationService consultationService)
+
+        public ConsultationController(UserService userService, IConsultationService consultationService)
         {
             _userService = userService;
             _consultationService = consultationService;
@@ -39,7 +39,7 @@ namespace medsys.Controllers
                 additionalInfo = request.AdditionalInfo ?? "",
                 ConsultationId = Guid.NewGuid().ToString(),
             };
-            
+
             await _consultationService.AddConsultation(newConsult);
             return Created();
         }

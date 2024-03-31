@@ -4,23 +4,27 @@ using medsys.Entities;
 using medsys.Services;
 using medsys.Auth;
 using Microsoft.AspNetCore.Http.HttpResults;
-using System.Net;
+using Microsoft.IdentityModel.Tokens;
 
 namespace medsys.Controllers
 {
     [ApiController]
     [Authorize]
     [Route("api")]
-    public class userController : ControllerBase
+    public class UserController : ControllerBase
     {
-        private IUserService _userService;
+        private UserService _userService;
+        private readonly IJwtUtils _jwtUtils;
 
-        public userController(IUserService userService)
+        public UserController(UserService userService, IJwtUtils jwtUtils)
         {
             _userService = userService;
+            _jwtUtils = jwtUtils;
         }
 
         [HttpGet("users")]
+        [ProducesResponseType<User>(StatusCodes.Status200OK)]
+        [ProducesResponseType<User>(StatusCodes.Status204NoContent)]
         public async Task<Results<NoContent, Ok<DefaultResponseDto>>> GetUsers()
         {
             var result = await _userService.GetAll();
@@ -48,25 +52,30 @@ namespace medsys.Controllers
         [HttpPost("register")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<Results<Created, BadRequest>> Register(UserRegisterDTO request)
+        public async Task<Results<Ok<DefaultResponseDto>, BadRequest<DefaultResponseDto>>> Register(UserRegisterDTO request)
         {
-            var created = await _userService.RegisterUser(request);
-            if (!created)
+            var id = await _userService.RegisterUser(request);
+            if (id.IsNullOrEmpty())
             {
-                return TypedResults.BadRequest();
+                return TypedResults.BadRequest(new DefaultResponseDto { Status = "fail", Message = "Server error, try again" });
             }
-            else
-            {
-                return TypedResults.Created();
-            }
+
+            return TypedResults.Ok(new DefaultResponseDto { Status = "success", Data = new { userId = id } });
         }
 
         [AllowAnonymous]
         [HttpPost("login")]
-        public async Task<IActionResult> login(UserLoginDTO request)
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<Results<Ok<DefaultResponseDto>, BadRequest<DefaultResponseDto>>> Login(UserLoginDTO request)
         {
-            return await _userService.LoginUser(request);
+            var user = await _userService.LoginUser(request);
+            if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.HashedPassword))
+            {
+                return TypedResults.BadRequest(new DefaultResponseDto { Status = "fail", Message = "Wrong login/password, try again" });
+            }
+            var token = _jwtUtils.GenerateJwtToken(user);
+            return TypedResults.Ok(new DefaultResponseDto { Status = "success", Data = token });
         }
-
     }
 }

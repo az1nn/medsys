@@ -1,34 +1,15 @@
-﻿using medsys.Auth;
-using medsys.Data;
+﻿using medsys.Data;
 using medsys.Entities;
 using medsys.Models;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace medsys.Services
 {
-    public interface IUserService
+    public class UserService(UserContext context)
     {
-        Task<bool> RegisterUser(UserRegisterDTO request);
-        Task<IActionResult> LoginUser(UserLoginDTO request);
-        Task<List<User>> GetAll();
-        Task<User> GetUserById(string id);
-        Task<User> GetUserByIdAuth(string id);
-    }
-    public class UserService: IUserService
-    {
-        private readonly UserContext _context;
-        private readonly ITokenGeneratorService _tokenGeneratorService;
-        private readonly IJwtUtils _jwtUtils; 
-        public UserService(UserContext context, ITokenGeneratorService tokenGeneratorService, IJwtUtils jwtUtils)
-        {
-            _context = context;
-            _tokenGeneratorService = tokenGeneratorService;
-            _jwtUtils = jwtUtils;
-
-        }
-        public static User user = new User();
-        public async Task<bool> RegisterUser(UserRegisterDTO request)
+        private readonly UserContext _context = context;
+        public static User user = new();
+        public async Task<string> RegisterUser(UserRegisterDTO request)
         {
             string passwordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
             var newUser = new User()
@@ -41,30 +22,15 @@ namespace medsys.Services
             };
             _context.Users.Add(newUser);
             await _context.SaveChangesAsync();
-            return true;
+            return newUser.Id;
         }
 
-        public async Task<IActionResult> LoginUser(UserLoginDTO request)
+        public async Task<User?> LoginUser(UserLoginDTO request)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(user => user.LoginEmail == request.LoginEmail);
-            if (user == null)
-            {
-                return new NotFoundObjectResult("User Not Found");
-
-            }
-            if (!BCrypt.Net.BCrypt.Verify(request.Password, user.HashedPassword))
-            {
-                return new BadRequestObjectResult("Wrong password, try again"); 
-            }
-
-            //string role = user.IsDoctor ? "Doctor" : "Patient";
-
-            var token = _jwtUtils.GenerateJwtToken(user);
-
-            return new OkObjectResult(new { token = token, message = "Success" });
+            return await _context.Users.FirstOrDefaultAsync(user => user.LoginEmail == request.LoginEmail);
         }
 
-        public async Task<List<User>> GetAll() 
+        public async Task<List<User>> GetAll()
         {
             return await _context.Users.ToListAsync();
         }
@@ -72,13 +38,13 @@ namespace medsys.Services
         public async Task<User?> GetUserById(string id)
         {
             var user = await _context.Users.FirstOrDefaultAsync(item => item.Id == id);
-            return user;
+            return user ?? null;
         }
 
         public async Task<User?> GetUserByIdAuth(string id)
         {
             var user = await _context.Users.FirstOrDefaultAsync(item => item.Id == id);
-            return user;
+            return user ?? null;
         }
 
     }
